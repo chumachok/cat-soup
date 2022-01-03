@@ -9,9 +9,9 @@ dnf --enablerepo="elrepo-kernel" install -y --allowerasing kernel-ml kernel-ml-d
 
 # install additional dependencies
 dnf config-manager --set-enabled powertools
-dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool
+dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool libsodium-devel libpcap-devel
+
 systemctl reboot
 
 echo "192.168.56.11 nyako" >> /etc/hosts
 echo "192.168.56.12 nyatta" >> /etc/hosts
-

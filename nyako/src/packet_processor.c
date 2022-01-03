@@ -1,7 +1,5 @@
 #include "packet_processor.h"
 
-// clang -O2 -g -Wall -target bpf -c src/packet_processor.c -o packet_processor.o
-
 static __always_inline int parse_ethhdr(struct hdr_cursor *header, void *data_end, struct ethhdr **ethhdr)
 {
   struct ethhdr *eth = header->pos;
