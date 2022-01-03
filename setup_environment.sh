@@ -8,7 +8,8 @@ dnf makecache
 dnf --enablerepo="elrepo-kernel" install -y --allowerasing kernel-ml kernel-ml-devel kernel-ml-headers
 
 # install additional dependencies
-dnf install -y clang bpftool
+dnf config-manager --set-enabled powertools
+dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool
 systemctl reboot
 
 echo "192.168.56.11 nyako" >> /etc/hosts

@@ -1,0 +1,17 @@
+// load program
+ip link set eth1 xdpgeneric obj <filename>.o sec <filename>
+
+// -v or -vv to increase verbosity
+xdp-loader load -m skb -s <filename> eth1 <filename>.o
+
+// unload program
+ip link set eth1 xdpgeneric off
+xdp-loader unload -a eth1
+
+// show programs
+bpftool prog show
+xdp-loader status
+
+// view map details
+bpftool map show
+bpftool map dump id <id>

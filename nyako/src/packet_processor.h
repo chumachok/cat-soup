@@ -15,4 +15,12 @@ struct hdr_cursor
   void *pos;
 };
 
+struct
+{
+  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+  __type(key, __u32);
+  __type(value, long);
+  __uint(max_entries, 1);
+} rxcnt SEC(".maps");
+
 #endif
