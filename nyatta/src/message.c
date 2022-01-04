@@ -34,14 +34,13 @@ int get_command_type(const char* command)
   else if (strcmp(command, REMOVE_WATCHER_CMD) == 0)
     return TYPE_REMOVE_WATCHER;
 
-  // default command
   return TYPE_EXECUTE_CMD;
 }
 
-int craft_message(unsigned char *message, unsigned char *auth_header, int id, int type, unsigned char *ciphertext, int ciphertext_len)
+int craft_message(unsigned char *message, unsigned char *auth_header, int id, int type, int ciphertext_len, unsigned char *ciphertext, unsigned char *nonce)
 {
   int n;
-  n = snprintf((char *) message, DATA_BUF_SIZE, "%s.%i.%i.%i.%s", auth_header, id, type, ciphertext_len, ciphertext);
+  n = snprintf((char *) message, DATA_BUF_SIZE, "%s.%i.%i.%i.%s.%s", auth_header, id, type, ciphertext_len, ciphertext, nonce);
 
   return n;
 }
