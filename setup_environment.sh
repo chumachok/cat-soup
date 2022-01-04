@@ -9,7 +9,7 @@ dnf --enablerepo="elrepo-kernel" install -y --allowerasing kernel-ml kernel-ml-d
 
 # install additional dependencies
 dnf config-manager --set-enabled powertools
-dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool libsodium-devel libpcap-devel
+dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool libsodium-devel libpcap-devel libcurl-devel
 
 systemctl reboot
 

@@ -2,11 +2,12 @@
 #define COMMAND_H
 
 #define ADD_WATCHER_CMD "add_watcher"
-#define REM_WATCHER_CMD "remove_watcher"
+#define REMOVE_WATCHER_CMD "remove_watcher"
 
 enum command_types
 {
   TYPE_INVOKE_BACKDOOR,
+  TYPE_EXECUTE_CMD,
   TYPE_SUSPEND_BACKDOOR,
   TYPE_START_TRANSFER,
   TYPE_END_TRANSFER,
