@@ -41,7 +41,7 @@ int get_command_type(const char* command)
 int craft_message(unsigned char *message, unsigned char *auth_header, int id, int type, unsigned char *ciphertext, int ciphertext_len)
 {
   int n;
-  n = snprintf((char *) message, BUF_SIZE, "%s.%i.%i.%i.%s", auth_header, id, type, ciphertext_len, ciphertext);
+  n = snprintf((char *) message, DATA_BUF_SIZE, "%s.%i.%i.%i.%s", auth_header, id, type, ciphertext_len, ciphertext);
 
   return n;
 }

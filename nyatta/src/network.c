@@ -22,7 +22,7 @@ int send_request(const unsigned char *payload)
   CURLcode res;
   struct curl_slist *headers = NULL;
   char errbuf[CURL_ERROR_SIZE];
-  char data[BUF_SIZE];
+  char data[DATA_BUF_SIZE];
 
   curl = curl_easy_init();
 
@@ -33,10 +33,11 @@ int send_request(const unsigned char *payload)
   }
 
   // set debugging options
-  if (DEBUG)
+  if (DEBUG_ENABLED)
   {
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   }
+
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
 
   if (snprintf(data, sizeof(data), "%s%s", PAYLOAD_HEADER, payload) < 0)

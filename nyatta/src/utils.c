@@ -1,5 +1,22 @@
 #include "utils.h"
 
+void generate_rand_string(unsigned char *str, int size)
+{
+  const char charset[] = "abcdefghijklmnopqrstuvwxyz";
+  if (size)
+  {
+    --size;
+    for (int n = 0; n < size; n++)
+    {
+      int key = rand() % (int) (sizeof charset - 1);
+      str[n] = charset[key];
+    }
+    str[size] = '\0';
+  }
+
+  return;
+}
+
 int read_file(const char *path, unsigned char *buf)
 {
   FILE *fp;

@@ -8,7 +8,7 @@ int encrypt(const unsigned char *data, size_t len, const char *private_key_path,
 
   size_t ciphertext_len = crypto_secretbox_MACBYTES + len;
 
-  if (ciphertext_len > BUF_SIZE)
+  if (ciphertext_len > DATA_BUF_SIZE)
   {
     log_error("ciphertext_len invalid");
     return -1;
