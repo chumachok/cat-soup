@@ -9,6 +9,11 @@
 #include <linux/ipv6.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
+#include <string.h>
+
+#include "crypto.h"
+
+#define BUF_SIZE 64
 
 struct hdr_cursor
 {

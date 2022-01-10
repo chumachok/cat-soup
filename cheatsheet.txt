@@ -15,3 +15,9 @@ xdp-loader status
 // view map details
 bpftool map show
 bpftool map dump id <id>
+
+// check events available for tracing
+cat /sys/kernel/debug/tracing/available_events | grep bpf
+
+// check print_k output
+trace-cmd show

@@ -38,6 +38,19 @@ int process_packet(struct xdp_md *ctx)
   __u32 key = 0;
   long *value;
 
+  unsigned char crypto_key[32];
+  unsigned char cipher[BUF_SIZE], decrypted[BUF_SIZE];
+  // __u32 plaintext_len;
+
+  memcpy(crypto_key, CRYPTO_KEY, sizeof(crypto_key));
+
+  // xor cipher
+  // for(__u32 i = 0; i < sizeof(plaintext) - 1; i++)
+  // {
+  //   cipher[i] = plaintext[i] ^ crypto_key[i % sizeof(crypto_key)];
+  // }
+
+
   // start next header cursor position at data start
   header.pos = data;
 
@@ -56,4 +69,4 @@ int process_packet(struct xdp_md *ctx)
   return XDP_PASS;
 }
 
-char _license[] SEC("license") = "MIT";
+char _license[] SEC("license") = "Dual MIT/GPL";
