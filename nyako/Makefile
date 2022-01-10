@@ -1,13 +1,13 @@
-CC=clang -O2 -Wall -target bpf
+CC=clang -g -O2 -Wall -target bpf
 
-packet_processor:
-	$(CC) -c src/packet_processor.c -o packet_processor.o
+nyako_kern:
+	$(CC) -c src/nyako_kern.c -o nyako_kern.o
 
 load:
-	xdp-loader load -m skb -s packet_processor eth1 packet_processor.o
+	xdp-loader load -m skb -s nyako_kern eth1 nyako_kern.o
 
 unload:
 	xdp-loader unload -a eth1
 
 clean:
-	rm nyako
+	rm nyako_kern.o

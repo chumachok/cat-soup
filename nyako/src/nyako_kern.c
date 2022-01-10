@@ -1,4 +1,4 @@
-#include "packet_processor.h"
+#include "nyako_kern.h"
 
 static __always_inline int parse_ethhdr(struct hdr_cursor *header, void *data_end, struct ethhdr **ethhdr)
 {
@@ -24,7 +24,8 @@ static __always_inline int parse_ethhdr(struct hdr_cursor *header, void *data_en
 //  __u32 rx_queue_index; // rxq->queue_index
 //  __u32 egress_ifindex; // txq->dev->ifindex
 // };
-SEC("packet_processor")
+
+SEC("nyako_kern")
 int process_packet(struct xdp_md *ctx)
 {
   void *data_end = (void *)(long)ctx->data_end;

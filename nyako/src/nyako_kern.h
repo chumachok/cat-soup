@@ -1,5 +1,5 @@
-#ifndef PACKET_PROCESSOR_H
-#define PACKET_PROCESSOR_H
+#ifndef NYAKO_KERN_H
+#define NYAKO_KERN_H
 
 #include <stddef.h>
 #include <linux/bpf.h>
