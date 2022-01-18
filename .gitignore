@@ -1,4 +1,5 @@
 .vagrant
 *.o
+*.pcap
 
 nyatta/nyatta

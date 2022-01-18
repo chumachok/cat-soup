@@ -39,8 +39,16 @@ int get_command_type(const char* command)
 
 int craft_message(unsigned char *message, unsigned char *auth_header, int id, int type, int ciphertext_len, unsigned char *ciphertext, unsigned char *nonce)
 {
-  int n;
-  n = snprintf((char *) message, DATA_BUF_SIZE, "%s.%i.%i.%i.%s.%s", auth_header, id, type, ciphertext_len, ciphertext, nonce);
+  int n, padding;
+  unsigned char padding_buf[MESSAGE_BUF_SIZE];
+  n = snprintf((char *) message, MESSAGE_BUF_SIZE, "%s.%i.%i.%i.%s.%s", auth_header, id, type, ciphertext_len, ciphertext, nonce);
+  padding = MESSAGE_BUF_SIZE - n;
+
+  if (padding > 0)
+  {
+    generate_rand_string(padding_buf, padding - 1);
+    snprintf((char *)message + n, padding, ".%s", (char *)padding_buf);
+  }
 
   return n;
 }

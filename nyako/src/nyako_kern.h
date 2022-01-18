@@ -13,36 +13,32 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 
-#define BUF_SIZE 64
+#include "constants.h"
+
 #define PAYLOAD_HEADER "If-None-Match: "
 #define HTTP_PORT 80
-#define CMD_QUEQUE_SIZE 16
+#define MESSAGE_QUEQUE_SIZE 16
 #define CLIENT_IP_OFFSET 22
 #define EXTRA_HEADER_SIZE 30
-#define IP_BUF_SIZE 33
-#define AUTH_HEADER (unsigned char*)"lo7ct"
-#define AUTH_HEADER_SIZE 5
+#define CONTROL_CHAR_SIZE 4
+#define IP_BUF_SIZE 16
 
 struct hdr_cursor
 {
   void *pos;
 };
 
-struct cmd_details
+struct message_details
 {
-  unsigned char message[BUF_SIZE];
+  unsigned char message[MESSAGE_BUF_SIZE];
   unsigned char ip[IP_BUF_SIZE];
 };
 
-struct bpf_map_def SEC("maps") cmd_map_array = {
+struct bpf_map_def SEC("maps") message_map_array = {
   .type        = BPF_MAP_TYPE_ARRAY,
   .key_size    = sizeof(__u32),
-  .value_size  = sizeof(struct cmd_details),
-  .max_entries = CMD_QUEQUE_SIZE,
+  .value_size  = sizeof(struct message_details),
+  .max_entries = MESSAGE_QUEQUE_SIZE,
 };
-
-// #ifndef lock_xadd
-// #define lock_xadd(ptr, val)	((void) __sync_fetch_and_add(ptr, val))
-// #endif
 
 #endif

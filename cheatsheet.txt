@@ -23,3 +23,6 @@ cat /sys/kernel/debug/tracing/available_events | grep bpf
 trace-cmd show
 
 llvm-objdump -d -r --print-imm-hex nyako_kern.o
+
+// capture packets and write to a pcap file
+tcpdump -i eth1 -w temp.pcap

@@ -9,7 +9,7 @@ dnf --enablerepo="elrepo-kernel" install -y --allowerasing kernel-ml kernel-ml-d
 
 # install additional dependencies
 dnf config-manager --set-enabled powertools
-dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool traceroute curl nmap trace-cmd strace
+dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool traceroute curl nmap trace-cmd strace tcpdump
 
 # setup httpd
 dnf install -y httpd

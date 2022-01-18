@@ -6,6 +6,7 @@
 
 #include "constants.h"
 #include "command.h"
+#include "utils.h"
 
 void to_hex(unsigned char* input, int len, unsigned char* output);
 void to_ascii(unsigned char *dest, const unsigned char *data);

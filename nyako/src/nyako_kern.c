@@ -12,7 +12,7 @@ int process_packet(struct xdp_md *ctx)
   struct hdr_cursor header;
 
   int ip_hlen, tcp_hlen, eth_hlen;
-  unsigned int payload_len, ip_len;
+  unsigned int payload_len, message_len;
 
   void *data_end = (void *)(long)ctx->data_end;
   void *data = (void *)(long)ctx->data;
@@ -20,7 +20,7 @@ int process_packet(struct xdp_md *ctx)
   unsigned char *payload;
   unsigned short tot_len;
 
-  struct cmd_details *record;
+  struct message_details *record;
   __u32 key;
 
   // start next header cursor position at data start
@@ -97,6 +97,8 @@ int process_packet(struct xdp_md *ctx)
   }
 
   payload_len = tot_len - (ip_hlen + tcp_hlen);
+  message_len = payload_len;
+
   if (payload_len == 0)
   {
     goto out;
@@ -108,11 +110,11 @@ int process_packet(struct xdp_md *ctx)
   }
 
   payload = (unsigned char *)(header.pos + CLIENT_IP_OFFSET);
+  message_len -= CLIENT_IP_OFFSET;
 
-  ip_len = 0;
   key = 0;
 
-  record = bpf_map_lookup_elem(&cmd_map_array, &key);
+  record = bpf_map_lookup_elem(&message_map_array, &key);
 
   if (record == NULL)
   {
@@ -127,6 +129,7 @@ int process_packet(struct xdp_md *ctx)
     {
       record->ip[i] = '\0';
       payload += i;
+      message_len -= i;
       break;
     }
 
@@ -139,6 +142,7 @@ int process_packet(struct xdp_md *ctx)
     goto out;
   }
   payload += EXTRA_HEADER_SIZE;
+  message_len -= EXTRA_HEADER_SIZE;
 
   // check auth header
   if (((void *)payload + AUTH_HEADER_SIZE) > data_end)
@@ -154,10 +158,20 @@ int process_packet(struct xdp_md *ctx)
     }
   }
 
-  payload += AUTH_HEADER_SIZE;
+  message_len -= CONTROL_CHAR_SIZE;
 
-  // check message type
-  bpf_printk("%s", payload);
+  if (((void *) payload + MESSAGE_BUF_SIZE) > data_end)
+  {
+    goto out;
+  }
+
+  if (message_len != (MESSAGE_BUF_SIZE - 1))
+  {
+    goto out;
+  }
+
+  memcpy(record->message, payload, MESSAGE_BUF_SIZE - 1);
+  record->message[MESSAGE_BUF_SIZE - 1] = '\0';
 
 out:
   return action;
