@@ -1,31 +1,75 @@
-#include <string.h>
-#include <stdio.h>
+#include "nyako.h"
+
+static void get_map_value(int fd, __u32 key, struct message_details *value)
+{
+  if ((bpf_map_lookup_elem(fd, &key, value)) != 0)
+  {
+    fprintf(stderr, "ERROR: bpf_map_lookup_elem failed key:0x%X\n", key);
+  }
+}
+
+static int find_map_fd(const struct bpf_object *bpf_obj, const char *map_name)
+{
+  struct bpf_map *map;
+  int map_fd = -1;
+
+  map = bpf_object__find_map_by_name(bpf_obj, map_name);
+  if (!map)
+  {
+    return map_fd;
+  }
+
+  map_fd = bpf_map__fd(map);
+  return map_fd;
+}
+
+static void message_poll(int map_fd, __u32 key, int interval)
+{
+  struct message_details prev, message_details;
+
+  // get initial reading
+  get_map_value(map_fd, key, &message_details);
+  usleep(1000000 / 4);
+
+  while (true)
+  {
+    prev = message_details;
+    get_map_value(map_fd, key, &message_details);
+    printf("%s\n", message_details.message);
+
+    sleep(interval);
+  }
+}
 
 int main()
 {
-  // test encryption
-  unsigned char crypto_key[32];
-  unsigned char plaintext[128], cipher[128], decrypted[128];
+  struct bpf_object *bpf_obj;
+  int message_queque_map_fd;
+  int interval = 2;
 
-  memcpy(crypto_key, "IuUWptZcxmJXuVAHMAZ8TvBQdc3n0RBW", sizeof(crypto_key));
-  memcpy(plaintext, "qsVNEpZsTqLrwjOdEcw5buoCQNijTHuNi63uG7B2wjNkj3AVj9Bmzlua2jJH4Q9ll03ldWtzezcXTZbDO3Nfmq7Ppe32LU2DF7BQZILyFRvk8Hubcjb27VkPvakPEjb", sizeof(plaintext) - 1);
+  struct config cfg = {
+    .xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE,
+    .ifindex = IFINDEX,
+  };
 
-  plaintext[127] = '\0';
+  strncpy(cfg.filename, NYAKO_KERN_FILENAME, sizeof(cfg.filename));
+  strncpy(cfg.progsec, NYAKO_KERN_PROGSEC, sizeof(cfg.progsec));
 
-  for(int i = 0; i < sizeof(plaintext) - 1; i++)
+  if (!(bpf_obj = load_bpf_and_xdp_attach(&cfg)))
   {
-    cipher[i] = plaintext[i] ^ crypto_key[i % sizeof(crypto_key)];
+    log_error("load_bpf_and_xdp_attach");
+    return -1;
   }
 
-  for(int i = 0; i < sizeof(cipher) - 1; i++)
+  message_queque_map_fd = find_map_fd(bpf_obj, "message_queque_map");
+  if (message_queque_map_fd < 0)
   {
-    decrypted[i] = cipher[i] ^ crypto_key[i % sizeof(crypto_key)];
+    xdp_link_detach(cfg.ifindex, cfg.xdp_flags, 0);
+    log_error("find_map_fd");
+    return -1;
   }
 
-  decrypted[127] = '\0';
-
-  printf("%s\n", plaintext);
-  printf("%s\n", decrypted);
+  message_poll(message_queque_map_fd, 0, interval);
 
   return 0;
 }

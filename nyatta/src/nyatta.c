@@ -13,9 +13,9 @@
 #include "message.h"
 
 static char *line = NULL;
-static int message_id = 0;
+static unsigned long message_id = 0;
 
-static void toggle_backdoor(int message_id, int command_type)
+static void toggle_backdoor(unsigned long message_id, int command_type)
 {
   unsigned char message[MESSAGE_BUF_SIZE], buf[24];
 

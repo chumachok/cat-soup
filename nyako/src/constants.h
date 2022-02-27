@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 #define MESSAGE_BUF_SIZE 512
+#define BUF_SIZE 256
 #define AUTH_HEADER (unsigned char*)"lo7ct"
 #define AUTH_HEADER_SIZE 5
 

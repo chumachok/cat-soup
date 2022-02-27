@@ -14,27 +14,29 @@
 #include <linux/tcp.h>
 
 #include "constants.h"
+#include "message.h"
 
 #define PAYLOAD_HEADER "If-None-Match: "
 #define HTTP_PORT 80
-#define MESSAGE_QUEQUE_SIZE 16
+// TODO: support message queue
+#define MESSAGE_QUEQUE_SIZE 1
 #define CLIENT_IP_OFFSET 22
 #define EXTRA_HEADER_SIZE 30
 #define CONTROL_CHAR_SIZE 4
-#define IP_BUF_SIZE 16
 
 struct hdr_cursor
 {
   void *pos;
 };
 
-struct message_details
-{
-  unsigned char message[MESSAGE_BUF_SIZE];
-  unsigned char ip[IP_BUF_SIZE];
+struct bpf_map_def SEC("maps") message_count_map = {
+  .type        = BPF_MAP_TYPE_ARRAY,
+  .key_size    = sizeof(__u32),
+  .value_size  = sizeof(unsigned long int),
+  .max_entries = 1,
 };
 
-struct bpf_map_def SEC("maps") message_map_array = {
+struct bpf_map_def SEC("maps") message_queque_map = {
   .type        = BPF_MAP_TYPE_ARRAY,
   .key_size    = sizeof(__u32),
   .value_size  = sizeof(struct message_details),

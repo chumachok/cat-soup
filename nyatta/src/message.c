@@ -37,11 +37,11 @@ int get_command_type(const char* command)
   return TYPE_EXECUTE_CMD;
 }
 
-int craft_message(unsigned char *message, unsigned char *auth_header, int id, int type, int ciphertext_len, unsigned char *ciphertext, unsigned char *nonce)
+int craft_message(unsigned char *message, unsigned char *auth_header, unsigned long id, int type, int ciphertext_len, unsigned char *ciphertext, unsigned char *nonce)
 {
   int n, padding;
   unsigned char padding_buf[MESSAGE_BUF_SIZE];
-  n = snprintf((char *) message, MESSAGE_BUF_SIZE, "%s.%i.%i.%i.%s.%s", auth_header, id, type, ciphertext_len, ciphertext, nonce);
+  n = snprintf((char *) message, MESSAGE_BUF_SIZE, "%s.%li.%i.%i.%s.%s", auth_header, id, type, ciphertext_len, ciphertext, nonce);
   padding = MESSAGE_BUF_SIZE - n;
 
   if (padding > 0)

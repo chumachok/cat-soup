@@ -21,7 +21,10 @@ int process_packet(struct xdp_md *ctx)
   unsigned short tot_len;
 
   struct message_details *record;
-  __u32 key;
+  unsigned long int *message_count;
+
+  __u32 message_count_key = 0;
+  __u32 message_queue_key = 0;
 
   // start next header cursor position at data start
   header.pos = data;
@@ -112,9 +115,18 @@ int process_packet(struct xdp_md *ctx)
   payload = (unsigned char *)(header.pos + CLIENT_IP_OFFSET);
   message_len -= CLIENT_IP_OFFSET;
 
-  key = 0;
+  message_count = bpf_map_lookup_elem(&message_count_map, &message_count_key);
 
-  record = bpf_map_lookup_elem(&message_map_array, &key);
+  if (message_count == NULL)
+  {
+    action = XDP_ABORTED;
+    goto out;
+  }
+
+  *message_count += 1;
+  message_queue_key = *message_count % MESSAGE_QUEQUE_SIZE;
+
+  record = bpf_map_lookup_elem(&message_queque_map, &message_queue_key);
 
   if (record == NULL)
   {
