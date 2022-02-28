@@ -2,22 +2,22 @@
 
 # update kernel version
 dnf update -y
-dnf install -y https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm
-rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-dnf makecache
-dnf --enablerepo="elrepo-kernel" install -y --allowerasing kernel-ml kernel-ml-devel kernel-ml-headers
 
 # install additional dependencies
-dnf config-manager --set-enabled powertools
-dnf install -y clang llvm gcc libbpf libbpf-devel libxdp xdp-tools bpftool traceroute curl nmap trace-cmd strace tcpdump
+dnf install -y clang vim llvm gcc libbpf libbpf-devel libsodium-devel libcurl-devel libxdp xdp-tools bpftool traceroute curl nmap trace-cmd strace tcpdump glibc-devel.i686
 
 # setup httpd
 dnf install -y httpd
-systemctl enable httpd
-systemctl start httpd
 
-firewall-cmd --permanent --zone=public --add-service=http --add-service=https
-firewall-cmd --reload
+echo "<!DOCTYPE html>" >> /var/www/html/index.html
+echo "<html>" >> /var/www/html/index.html
+echo "        <body>" >> /var/www/html/index.html
+echo "                <h1>Web Server</h1>" >> /var/www/html/index.html
+echo "        </body>" >> /var/www/html/index.html
+echo "</html>" >> /var/www/html/index.html
+
+systemctl enable httpd
+systemctl restart httpd
 
 systemctl reboot
 

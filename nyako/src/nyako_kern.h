@@ -19,7 +19,7 @@
 #define PAYLOAD_HEADER "If-None-Match: "
 #define HTTP_PORT 80
 // TODO: support message queue
-#define MESSAGE_QUEQUE_SIZE 1
+#define MESSAGE_QUEQUE_SIZE 4
 #define CLIENT_IP_OFFSET 22
 #define EXTRA_HEADER_SIZE 30
 #define CONTROL_CHAR_SIZE 4

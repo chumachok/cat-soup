@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
   config.vm.define "nyako" do |server|
-    server.vm.box = "generic/centos8"
+    server.vm.box = "fedora/34-cloud-base"
     server.vm.network "private_network", ip: "192.168.56.11"
     server.vm.hostname = "nyako"
     server.vm.define "nyako"
@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "nyatta" do |client|
-    client.vm.box = "generic/centos8"
+    client.vm.box = "fedora/34-cloud-base"
     client.vm.network "private_network", ip: "192.168.56.12"
     client.vm.hostname = "nyatta"
     client.vm.define "nyatta"

@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 # install additional dependencies
-dnf config-manager --set-enabled powertools
 dnf update -y
-dnf install -y gcc libsodium-devel libpcap-devel libcurl-devel traceroute nmap trace-cmd strace tcpdump
+dnf install -y gcc vim libsodium-devel libpcap-devel libcurl-devel traceroute nmap trace-cmd strace tcpdump curl
 
 systemctl reboot
 
