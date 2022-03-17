@@ -57,7 +57,7 @@ int parse_message(unsigned char *message_in, struct message *message_out)
     switch (i)
     {
     case 0:
-      snprintf((char *)message_out->auth_header, AUTH_HEADER_SIZE, "%s", ptr);
+      snprintf((char *)message_out->auth_header, AUTH_HEADER_SIZE + 1, "%s", ptr);
       break;
     case 1:
       message_out->id = atoi(ptr);

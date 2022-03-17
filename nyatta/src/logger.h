@@ -6,5 +6,6 @@
 
 void log_error(const char *msg);
 void log_info(const char *msg);
+void log_pcap_error(const char *msg, const char *errbuf);
 
 #endif

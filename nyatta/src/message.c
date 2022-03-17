@@ -52,3 +52,44 @@ int craft_message(unsigned char *message, unsigned char *auth_header, unsigned l
 
   return n;
 }
+
+int parse_message(unsigned char *message_in, struct message *message_out)
+{
+  int i;
+  unsigned char copy[MESSAGE_BUF_SIZE];
+  char delim[] = ".";
+
+  snprintf((char *)copy, sizeof(copy), "%s", message_in);
+  char *ptr = strtok((char *)copy, delim);
+  i = 0;
+  while(ptr != NULL)
+  {
+    switch (i)
+    {
+    case 0:
+      snprintf((char *)message_out->auth_header, AUTH_HEADER_SIZE + 1, "%s", ptr);
+      break;
+    case 1:
+      message_out->id = atoi(ptr);
+      break;
+    case 2:
+      message_out->type = atoi(ptr);
+      break;
+    case 3:
+      message_out->ciphertext_len = atoi(ptr);
+      break;
+    case 4:
+      to_ascii(message_out->ciphertext, (unsigned char *)ptr);
+      break;
+    case 5:
+      to_ascii(message_out->nonce, (unsigned char *)ptr);
+      break;
+    default:
+      break;
+    }
+    i++;
+    ptr = strtok(NULL, delim);
+  }
+
+  return 0;
+}

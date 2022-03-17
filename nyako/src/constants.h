@@ -3,7 +3,7 @@
 
 #define MESSAGE_BUF_SIZE 512
 #define DATA_BUF_SIZE 544
-#define BUF_SIZE 256
+#define BUF_SIZE 192
 #define AUTH_HEADER (unsigned char*)"lo7ct"
 #define AUTH_HEADER_SIZE 5
 #define PRIVATE_KEY_PATH "keys/private.bin"

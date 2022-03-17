@@ -9,3 +9,8 @@ void log_info(const char *msg)
 {
   fprintf(stdout, "INFO: %s\n", msg);
 }
+
+void log_pcap_error(const char *msg, const char *errbuf)
+{
+  fprintf(stderr, "%s: %s\n", msg, errbuf);
+}

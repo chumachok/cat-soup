@@ -19,7 +19,7 @@ struct message_details
 
 struct message
 {
-  unsigned char auth_header[AUTH_HEADER_SIZE];
+  unsigned char auth_header[AUTH_HEADER_SIZE + 1];
   unsigned long id;
   int type;
   int ciphertext_len;

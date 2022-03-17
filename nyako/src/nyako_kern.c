@@ -134,6 +134,7 @@ int process_packet(struct xdp_md *ctx)
     goto out;
   }
 
+  // TODO fix: to set client IP and not backdoor IP
   // set client ip
   for (unsigned int i = 0; i < IP_BUF_SIZE; i++)
   {
