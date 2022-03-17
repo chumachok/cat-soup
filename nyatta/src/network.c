@@ -16,6 +16,11 @@ static void log_request_error(CURLcode res, char *errbuf)
   }
 }
 
+static size_t no_write(void *buffer, size_t size, size_t nmemb, void *userp)
+{
+  return size * nmemb;
+}
+
 int send_request(const unsigned char *payload)
 {
   CURL *curl;
@@ -39,6 +44,7 @@ int send_request(const unsigned char *payload)
   }
 
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, no_write);
 
   if (snprintf(data, sizeof(data), "%s%s", PAYLOAD_HEADER, payload) < 0)
   {
