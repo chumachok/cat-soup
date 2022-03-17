@@ -1,8 +1,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#define ADD_WATCHER_CMD "add_watcher"
-#define REMOVE_WATCHER_CMD "remove_watcher"
+#define INVOKE_BACKDOOR_CMD "invoke"
+#define SUSPEND_BACKDOOR_CMD "suspend"
 
 enum command_types
 {
@@ -10,10 +10,6 @@ enum command_types
   TYPE_EXECUTE_CMD,
   TYPE_SEND_CMD_RESULT,
   TYPE_SUSPEND_BACKDOOR,
-  TYPE_START_TRANSFER,
-  TYPE_END_TRANSFER,
-  TYPE_ADD_WATCHER,
-  TYPE_REMOVE_WATCHER,
 };
 
 #endif

