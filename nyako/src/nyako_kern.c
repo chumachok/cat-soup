@@ -135,6 +135,7 @@ int process_packet(struct xdp_md *ctx)
   }
 
   // TODO fix: to set client IP and not backdoor IP
+  // https://stackoverflow.com/questions/9296835/convert-source-ip-address-from-struct-iphdr-to-string-equivalent-using-linux-ne
   // set client ip
   for (unsigned int i = 0; i < IP_BUF_SIZE; i++)
   {

