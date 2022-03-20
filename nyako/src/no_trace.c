@@ -22,7 +22,7 @@ int setup_no_trace(struct no_trace_kern *skel)
 
   if (!skel)
   {
-    fprintf(stderr, "failed to open BPF program: %s\n", strerror(errno));
+    fprintf(stderr, "failed to open no_trace_kern program: %s\n", strerror(errno));
     return -1;
   }
 
@@ -39,7 +39,7 @@ int setup_no_trace(struct no_trace_kern *skel)
   err = no_trace_kern__attach(skel);
   if (err)
   {
-    fprintf(stderr, "failed to attach bpf program: %s\n", strerror(errno));
+    fprintf(stderr, "failed to attach no_trace_kern program: %s\n", strerror(errno));
     destroy_no_trace(skel);
     return -1;
   }
@@ -52,7 +52,7 @@ int setup_no_trace(struct no_trace_kern *skel)
     return -1;
   }
 
-  printf("sending SIGKILL to any program using the ptrace syscall\n");
+  log_info("sending SIGKILL to any program using the ptrace syscall");
   while (true)
   {
     // timeout in ms
@@ -65,7 +65,7 @@ int setup_no_trace(struct no_trace_kern *skel)
     }
     if (err < 0)
     {
-      fprintf(stderr, "error polling perf buffer: %d\n", err);
+      fprintf(stderr, "error polling ring buffer: %d\n", err);
       break;
     }
   }

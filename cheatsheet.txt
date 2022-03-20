@@ -21,6 +21,7 @@ cat /sys/kernel/debug/tracing/available_events | grep bpf
 
 // check print_k output
 trace-cmd show
+bpftool prog tracelog
 
 llvm-objdump -d -r --print-imm-hex nyako_kern.o
 

