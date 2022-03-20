@@ -93,7 +93,7 @@ int setup_pidhide(struct pidhide_kern *skel, int target_pid)
     return -1;
   }
 
-  printf("hiding PID %d...\n", target_pid);
+  printf("hiding PID %d ...\n", target_pid);
   while (true)
   {
     err = ring_buffer__poll(rb, 100);

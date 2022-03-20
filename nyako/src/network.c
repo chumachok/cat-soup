@@ -71,3 +71,10 @@ int send_request(const unsigned char *payload, const unsigned char *ip)
 
   return 0;
 }
+
+int saddr_to_str(unsigned char *buf, unsigned int saddr)
+{
+  int n;
+  n = snprintf((char *)buf, 16, "%s", inet_ntoa(*(struct in_addr*)&saddr));
+  return n;
+}

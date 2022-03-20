@@ -14,7 +14,7 @@
 struct message_details
 {
   unsigned char message[MESSAGE_BUF_SIZE];
-  unsigned char ip[IP_BUF_SIZE];
+  unsigned int ip_saddr;
 };
 
 struct message
