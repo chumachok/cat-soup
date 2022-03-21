@@ -27,3 +27,9 @@ llvm-objdump -d -r --print-imm-hex nyako_kern.o
 
 // capture packets and write to a pcap file
 tcpdump -i eth1 -w temp.pcap
+
+// snort
+snort -i eth1 -Afull -D -c /etc/snort/snort.conf -l /var/log/snort
+
+// tracee
+docker run --name tracee --rm --pid=host --cgroupns=host --privileged -it aquasec/tracee:0.6.5 trace --trace event=bpf

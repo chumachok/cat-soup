@@ -19,6 +19,18 @@ echo "</html>" >> /var/www/html/index.html
 systemctl enable httpd
 systemctl restart httpd
 
+# install snort
+rpm -Uvh https://forensics.cert.org/cert-forensics-tools-release-34.rpm
+dnf install snort -y
+
+# rules: /etc/snort/rules/community.rules
+# config /etc/snort/snort.conf
+
+# install docker
+dnf install docker -y
+systemctl restart docker
+systemctl enable docker
+
 systemctl reboot
 
 echo "192.168.56.12 nyatta" >> /etc/hosts
