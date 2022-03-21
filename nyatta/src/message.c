@@ -29,14 +29,16 @@ void to_ascii(unsigned char *dest, const unsigned char *data)
 
 int get_command_type(const char* command)
 {
-  if (strcmp(command, INVOKE_BACKDOOR_CMD) == 0)
-    return TYPE_INVOKE_BACKDOOR;
-  else if (strcmp(command, SUSPEND_BACKDOOR_CMD) == 0)
-    return TYPE_SUSPEND_BACKDOOR;
+  if (strcmp(command, INVOKE_CMD) == 0)
+    return TYPE_INVOKE;
+  else if (strcmp(command, SUSPEND_CMD) == 0)
+    return TYPE_SUSPEND;
   else if (strcmp(command, BLOCK_TRACE_CMD) == 0)
     return TYPE_BLOCK_TRACE;
   else if (strcmp(command, UNBLOCK_TRACE_CMD) == 0)
     return TYPE_UNBLOCK_TRACE;
+  else if (strcmp(command, TERMINATE_CMD) == 0)
+    return TYPE_TERMINATE;
 
   return TYPE_EXECUTE_CMD;
 }
