@@ -33,3 +33,6 @@ snort -i eth1 -Afull -D -c /etc/snort/snort.conf -l /var/log/snort
 
 // tracee
 docker run --name tracee --rm --pid=host --cgroupns=host --privileged -it aquasec/tracee:0.6.5 trace --trace event=bpf
+
+// netstat
+netstat -na | grep :80
