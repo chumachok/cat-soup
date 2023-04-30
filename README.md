@@ -20,13 +20,13 @@ riicfskpggkbbipzzrzucxamludfykgruowzgiooobppleqlwphapjnadqhdc
 
 remote command execution can be performed by entering a linux command. rootkit specific commands are outlined in the table below.
 
-| command       | technical details                                       | description                          |
-| ------------- | ------------------------------------------------------- | ------------------------------------ |
-| invoke        | send a message with the command type TYPE_INVOKE        | invokes nyako to to process commands |
-| suspend       | send a message with the command type TYPE_SUSPEND       | suspends nyako making                |
-| block_trace   | send a message with the command type TYPE_BLOCK_TRACE   | blocks any tracing attepts           |
-| unblock_trace | send a message with the command type TYPE_UNBLOCK_TRACE | disables tracing blocking            |
-| terminate     | send a message with the command type TYPE_TERMINATE     | terminates nyako                     |
+| command       | technical details                                       | description                           |
+| ------------- | ------------------------------------------------------- | ------------------------------------  |
+| invoke        | send a message with the command type TYPE_INVOKE        | invokes nyako to to process commands  |
+| suspend       | send a message with the command type TYPE_SUSPEND       | suspends nyako making it unresponsive |
+| block_trace   | send a message with the command type TYPE_BLOCK_TRACE   | blocks any tracing attepts            |
+| unblock_trace | send a message with the command type TYPE_UNBLOCK_TRACE | disables tracing blocking             |
+| terminate     | send a message with the command type TYPE_TERMINATE     | terminates nyako                      |
 
 for the additional details see documents/design.pdf and documents/manual.pdf.
 
