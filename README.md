@@ -1,7 +1,7 @@
 # cat soup
 
 ## overview
-cat soup is a rootkit developed to explore offensive capabilities using eBPF, its name was inspired by an animated film based on the manga created by Nekojiru. the rootkit consists of two components:
+cat soup is a kernel-level covert channel rootkit developed to explore offensive capabilities using eBPF, its name was inspired by an animated film based on the manga created by Nekojiru. the rootkit consists of two components:
 1. nyako (server)
 2. nyatta (client)
 
