@@ -127,7 +127,6 @@ pidhide_kern__create_skeleton(struct pidhide_kern *obj)
 	s = (struct bpf_object_skeleton *)calloc(1, sizeof(*s));
 	if (!s)
 		goto err;
-	obj->skeleton = s;
 
 	s->sz = sizeof(*s);
 	s->name = "pidhide_kern";
@@ -180,6 +179,7 @@ pidhide_kern__create_skeleton(struct pidhide_kern *obj)
 
 	s->data = (void *)pidhide_kern__elf_bytes(&s->data_sz);
 
+	obj->skeleton = s;
 	return 0;
 err:
 	bpf_object__destroy_skeleton(s);
