@@ -5,7 +5,7 @@ cat soup is a kernel-level covert channel rootkit developed to explore offensive
 1. nyako (server)
 2. nyatta (client)
 
-the encrypted messages between the components are exchanged via a covert channel that utilizes a If-None-Match header. header example:
+the encrypted messages between the components are exchanged via a covert channel that utilizes an If-None-Match HTTP header. header example:
 
 ```
 If-None-Match:
@@ -22,7 +22,7 @@ remote command execution can be performed by entering a linux command. rootkit s
 
 | command       | technical details                                       | description                           |
 | ------------- | ------------------------------------------------------- | ------------------------------------  |
-| invoke        | send a message with the command type TYPE_INVOKE        | invokes nyako to to process commands  |
+| invoke        | send a message with the command type TYPE_INVOKE        | invokes nyako to process commands     |
 | suspend       | send a message with the command type TYPE_SUSPEND       | suspends nyako making it unresponsive |
 | block_trace   | send a message with the command type TYPE_BLOCK_TRACE   | blocks any tracing attepts            |
 | unblock_trace | send a message with the command type TYPE_UNBLOCK_TRACE | disables tracing blocking             |
