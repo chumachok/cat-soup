@@ -1,4 +1,5 @@
 # cat soup
+![logo](images/logo.jpg)
 
 ## overview
 cat soup is a kernel-level covert channel rootkit developed to explore offensive capabilities using eBPF, its name was inspired by an animated film based on the manga created by Nekojiru. the rootkit consists of two components:
